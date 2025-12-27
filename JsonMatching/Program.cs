@@ -103,6 +103,10 @@ namespace JsonMatching
                     if (string.IsNullOrEmpty(item.name))
                         continue;
 
+                    int bestScore = 0;
+                    Product? bestMatch = null;
+
+                    // Find the best matching product for this item
                     foreach (var product in productsData)
                     {
                         if (string.IsNullOrEmpty(product.Name))
@@ -111,19 +115,26 @@ namespace JsonMatching
                         // Calculate similarity ratio using FuzzySharp
                         int similarityScore = Fuzz.Ratio(item.name, product.Name);
 
-                        if (similarityScore >= threshold)
+                        if (similarityScore >= threshold && similarityScore > bestScore)
                         {
-                            Console.WriteLine($"Совпадение найдено! (схожесть: {similarityScore}%)");
-                            Console.WriteLine($"  ID: {item.id}");
-                            Console.WriteLine($"  ItemsType2: {item.name}");
-                            Console.WriteLine($"  Products: {product.Name}\n");
-
-                            results.Add(new ResultItem
-                            {
-                                Id = item.id,
-                                Name = product.Name
-                            });
+                            bestScore = similarityScore;
+                            bestMatch = product;
                         }
+                    }
+
+                    // Add only the best match if found
+                    if (bestMatch != null)
+                    {
+                        Console.WriteLine($"Совпадение найдено! (схожесть: {bestScore}%)");
+                        Console.WriteLine($"  ID: {item.id}");
+                        Console.WriteLine($"  ItemsType2: {item.name}");
+                        Console.WriteLine($"  Products: {bestMatch.Name}\n");
+
+                        results.Add(new ResultItem
+                        {
+                            Id = item.id,
+                            Name = bestMatch.Name
+                        });
                     }
                 }
 
