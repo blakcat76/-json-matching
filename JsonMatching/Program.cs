@@ -221,6 +221,86 @@ namespace JsonMatching
 
                 Console.WriteLine($"Результаты сохранены в '{resultFilePath}'.");
                 Console.WriteLine($"Всего найдено совпадений: {results.Count}");
+
+                // Generate result2.json with best matches for remaining items (excluding those already matched)
+                Console.WriteLine($"\n=== Поиск лучших совпадений для оставшихся товаров ===\n");
+                
+                // Create sets of already matched IDs and ProductNames
+                HashSet<int> matchedItemIds = new HashSet<int>(results.Select(r => r.Id));
+                HashSet<string> matchedProductNames = new HashSet<string>(results.Where(r => r.ProductName != null).Select(r => r.ProductName!));
+
+                List<ResultItem> results2 = new List<ResultItem>();
+
+                foreach (var item in itemsData.items)
+                {
+                    // Skip items already matched in result.json
+                    if (matchedItemIds.Contains(item.id))
+                        continue;
+
+                    if (string.IsNullOrEmpty(item.name))
+                        continue;
+
+                    int bestScore = 0;
+                    Product? bestMatch = null;
+                    string? bestMatchNormalized = null;
+
+                    // Normalize the item name once for this iteration
+                    string normalizedItemName = NormalizeForMatching(item.name, isItemsType2: true);
+
+                    // Find the best matching product for this item (excluding already matched products)
+                    foreach (var product in productsData)
+                    {
+                        if (string.IsNullOrEmpty(product.Name))
+                            continue;
+
+                        // Skip products already matched in result.json
+                        if (matchedProductNames.Contains(product.Name))
+                            continue;
+
+                        // Normalize the product name
+                        string normalizedProductName = NormalizeForMatching(product.Name, isItemsType2: false);
+
+                        // Calculate similarity ratio using FuzzySharp on normalized names
+                        int similarityScore = Fuzz.Ratio(normalizedItemName, normalizedProductName);
+
+                        // No threshold - just find the best match
+                        if (similarityScore > bestScore)
+                        {
+                            bestScore = similarityScore;
+                            bestMatch = product;
+                            bestMatchNormalized = normalizedProductName;
+                        }
+                    }
+
+                    // Add the best match found (even if score is low)
+                    if (bestMatch != null)
+                    {
+                        Console.WriteLine($"Лучшее совпадение найдено! (схожесть: {bestScore}%)");
+                        Console.WriteLine($"  ID: {item.id}");
+                        Console.WriteLine($"  ItemsType2: {item.name}");
+                        Console.WriteLine($"  Products: {bestMatch.Name}");
+                        Console.WriteLine($"  Нормализовано: '{normalizedItemName}' <-> '{bestMatchNormalized}'\n");
+
+                        results2.Add(new ResultItem
+                        {
+                            Id = item.id,
+                            ItemName = item.name,
+                            ProductName = bestMatch.Name
+                        });
+
+                        // Mark this product as matched so it won't be used again
+                        if (bestMatch.Name != null)
+                            matchedProductNames.Add(bestMatch.Name);
+                    }
+                }
+
+                // Generate result2.json
+                string result2FilePath = "result2.json";
+                string result2Json = JsonSerializer.Serialize(results2, options);
+                File.WriteAllText(result2FilePath, result2Json);
+
+                Console.WriteLine($"Дополнительные результаты сохранены в '{result2FilePath}'.");
+                Console.WriteLine($"Всего найдено дополнительных совпадений: {results2.Count}");
             }
             catch (Exception ex)
             {

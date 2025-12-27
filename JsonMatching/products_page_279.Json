@@ -5,7 +5,7 @@
     "Region": "Германия, Бавария"
   },
   {
-    "Name": "Corona Extra,  355 мл",
+    "Name": "Corona Extra, 355 мл",
     "Url": "https://winestyle.ru/products/Corona-Extra-355.html",
     "Region": "Мексика"
   },
@@ -13,5 +13,20 @@
     "Name": "Heineken Lager, 0.5 л",
     "Url": "https://winestyle.ru/products/Heineken.html",
     "Region": "Нидерланды"
+  },
+  {
+    "Name": "Stella Artois Premium Lager, 0.5 л",
+    "Url": "https://winestyle.ru/products/Stella-Artois.html",
+    "Region": "Бельгия"
+  },
+  {
+    "Name": "Guinness Draught, 0.44 л",
+    "Url": "https://winestyle.ru/products/Guinness.html",
+    "Region": "Ирландия"
+  },
+  {
+    "Name": "Hoegaarden White, 0.33 л",
+    "Url": "https://winestyle.ru/products/Hoegaarden-White.html",
+    "Region": "Бельгия"
   }
 ]
