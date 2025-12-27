@@ -157,7 +157,47 @@ namespace JsonMatching
                 List<ResultItem> results = new List<ResultItem>();
                 int threshold = 80; // 80% similarity threshold
 
-                Console.WriteLine($"\nПоиск совпадений с порогом схожести {threshold}%...\n");
+                // Check if result.json already exists
+                if (File.Exists(resultFilePath))
+                {
+                    Console.WriteLine($"\nФайл '{resultFilePath}' найден. Загрузка существующих совпадений...\n");
+                    
+                    try
+                    {
+                        string existingResultJson = File.ReadAllText(resultFilePath);
+                        var existingResults = JsonSerializer.Deserialize<List<ResultItem>>(existingResultJson);
+                        
+                        if (existingResults != null && existingResults.Count > 0)
+                        {
+                            results = existingResults;
+                            Console.WriteLine($"Загружено {results.Count} существующих совпадений из '{resultFilePath}'.");
+                            Console.WriteLine("Пропуск этапа поиска совпадений >= 80%.\n");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Файл '{resultFilePath}' пуст. Выполняется поиск совпадений...\n");
+                            // Will proceed to calculate matches below
+                        }
+                    }
+                    catch (JsonException ex)
+                    {
+                        Console.WriteLine($"Ошибка при загрузке '{resultFilePath}': {ex.Message}");
+                        Console.WriteLine("Выполняется поиск совпадений заново...\n");
+                        results = new List<ResultItem>();
+                    }
+                }
+
+                // JSON serialization options
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                };
+
+                // Only perform matching if results weren't loaded from file
+                if (results.Count == 0)
+                {
+                    Console.WriteLine($"\nПоиск совпадений с порогом схожести {threshold}%...\n");
 
                 foreach (var item in itemsData.items)
                 {
@@ -209,18 +249,18 @@ namespace JsonMatching
                     }
                 }
 
-                // Generate result.json
-                var options = new JsonSerializerOptions
+                    // Generate result.json only if we calculated new results
+                    string resultJson = JsonSerializer.Serialize(results, options);
+                    File.WriteAllText(resultFilePath, resultJson);
+
+                    Console.WriteLine($"Результаты сохранены в '{resultFilePath}'.");
+                    Console.WriteLine($"Всего найдено совпадений: {results.Count}");
+                }
+                else
                 {
-                    WriteIndented = true,
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                };
-
-                string resultJson = JsonSerializer.Serialize(results, options);
-                File.WriteAllText(resultFilePath, resultJson);
-
-                Console.WriteLine($"Результаты сохранены в '{resultFilePath}'.");
-                Console.WriteLine($"Всего найдено совпадений: {results.Count}");
+                    // Results were loaded from existing file
+                    Console.WriteLine($"Используются существующие результаты: {results.Count} совпадений.");
+                }
 
                 // Generate result2.json with best matches for remaining items (excluding those already matched)
                 Console.WriteLine($"\n=== Поиск лучших совпадений для оставшихся товаров ===\n");
