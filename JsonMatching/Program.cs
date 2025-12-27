@@ -199,55 +199,55 @@ namespace JsonMatching
                 {
                     Console.WriteLine($"\nПоиск совпадений с порогом схожести {threshold}%...\n");
 
-                foreach (var item in itemsData.items)
-                {
-                    if (string.IsNullOrEmpty(item.name))
-                        continue;
-
-                    int bestScore = 0;
-                    Product? bestMatch = null;
-                    string? bestMatchNormalized = null;
-
-                    // Normalize the item name once for this iteration
-                    string normalizedItemName = NormalizeForMatching(item.name, isItemsType2: true);
-
-                    // Find the best matching product for this item
-                    foreach (var product in productsData)
+                    foreach (var item in itemsData.items)
                     {
-                        if (string.IsNullOrEmpty(product.Name))
+                        if (string.IsNullOrEmpty(item.name))
                             continue;
 
-                        // Normalize the product name
-                        string normalizedProductName = NormalizeForMatching(product.Name, isItemsType2: false);
+                        int bestScore = 0;
+                        Product? bestMatch = null;
+                        string? bestMatchNormalized = null;
 
-                        // Calculate similarity ratio using FuzzySharp on normalized names
-                        int similarityScore = Fuzz.Ratio(normalizedItemName, normalizedProductName);
+                        // Normalize the item name once for this iteration
+                        string normalizedItemName = NormalizeForMatching(item.name, isItemsType2: true);
 
-                        if (similarityScore >= threshold && similarityScore > bestScore)
+                        // Find the best matching product for this item
+                        foreach (var product in productsData)
                         {
-                            bestScore = similarityScore;
-                            bestMatch = product;
-                            bestMatchNormalized = normalizedProductName;
+                            if (string.IsNullOrEmpty(product.Name))
+                                continue;
+
+                            // Normalize the product name
+                            string normalizedProductName = NormalizeForMatching(product.Name, isItemsType2: false);
+
+                            // Calculate similarity ratio using FuzzySharp on normalized names
+                            int similarityScore = Fuzz.Ratio(normalizedItemName, normalizedProductName);
+
+                            if (similarityScore >= threshold && similarityScore > bestScore)
+                            {
+                                bestScore = similarityScore;
+                                bestMatch = product;
+                                bestMatchNormalized = normalizedProductName;
+                            }
+                        }
+
+                        // Add only the best match if found
+                        if (bestMatch != null)
+                        {
+                            Console.WriteLine($"Совпадение найдено! (схожесть: {bestScore}%)");
+                            Console.WriteLine($"  ID: {item.id}");
+                            Console.WriteLine($"  ItemsType2: {item.name}");
+                            Console.WriteLine($"  Products: {bestMatch.Name}");
+                            Console.WriteLine($"  Нормализовано: '{normalizedItemName}' <-> '{bestMatchNormalized}'\n");
+
+                            results.Add(new ResultItem
+                            {
+                                Id = item.id,
+                                ItemName = item.name,
+                                ProductName = bestMatch.Name
+                            });
                         }
                     }
-
-                    // Add only the best match if found
-                    if (bestMatch != null)
-                    {
-                        Console.WriteLine($"Совпадение найдено! (схожесть: {bestScore}%)");
-                        Console.WriteLine($"  ID: {item.id}");
-                        Console.WriteLine($"  ItemsType2: {item.name}");
-                        Console.WriteLine($"  Products: {bestMatch.Name}");
-                        Console.WriteLine($"  Нормализовано: '{normalizedItemName}' <-> '{bestMatchNormalized}'\n");
-
-                        results.Add(new ResultItem
-                        {
-                            Id = item.id,
-                            ItemName = item.name,
-                            ProductName = bestMatch.Name
-                        });
-                    }
-                }
 
                     // Generate result.json only if we calculated new results
                     string resultJson = JsonSerializer.Serialize(results, options);
