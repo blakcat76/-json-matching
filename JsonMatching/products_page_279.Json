@@ -1,6 +1,6 @@
 [
   {
-    "Name": "Paulaner, Oktoberfest Bier, in can,  0.5 л",
+    "Name": "Paulaner, Oktoberfest Bier, in can, 0.5 л",
     "Url": "https://winestyle.ru/products/Paulaner-Oktoberfest-Bier-in-can.html",
     "Region": "Германия, Бавария"
   },
@@ -8,5 +8,10 @@
     "Name": "Corona Extra,  355 мл",
     "Url": "https://winestyle.ru/products/Corona-Extra-355.html",
     "Region": "Мексика"
+  },
+  {
+    "Name": "Heineken Lager, 0.5 л",
+    "Url": "https://winestyle.ru/products/Heineken.html",
+    "Region": "Нидерланды"
   }
 ]

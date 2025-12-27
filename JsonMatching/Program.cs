@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 using FuzzySharp;
 
 namespace JsonMatching
@@ -29,6 +30,65 @@ namespace JsonMatching
             public int Id { get; set; }
             public string? ItemName { get; set; }
             public string? ProductName { get; set; }
+        }
+
+        // Normalize text for better matching
+        static string NormalizeForMatching(string text, bool isItemsType2 = false)
+        {
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
+
+            // Normalize whitespace characters (\t, \n, etc.) to single spaces
+            text = Regex.Replace(text, @"[\t\n\r]+", " ");
+            
+            // Normalize multiple spaces to single space
+            text = Regex.Replace(text, @"\s+", " ");
+
+            // For itemsType2, remove "Пиво бутылочное" and "Пиво разливное"
+            if (isItemsType2)
+            {
+                text = Regex.Replace(text, @"Пиво\s+(бутылочное|разливное)\s*", "", RegexOptions.IgnoreCase);
+                // Remove common abbreviations and words in itemsType2
+                text = Regex.Replace(text, @"\bимп\.\s*", "", RegexOptions.IgnoreCase);
+                text = Regex.Replace(text, @"\bПЭТ\b", "", RegexOptions.IgnoreCase);
+            }
+
+            // Remove parentheses and their contents (often contains packaging info)
+            text = Regex.Replace(text, @"\([^)]*\)", " ");
+
+            // Remove common country/region names for better matching
+            string[] regions = { "Германия", "Мексика", "Нидерланды", "Бельгия", "Италия", "Сербия", "Бавария" };
+            foreach (var region in regions)
+            {
+                text = Regex.Replace(text, @"\b" + region + @"\b", "", RegexOptions.IgnoreCase);
+            }
+
+            // Normalize number separators (. , space) - keep numbers but normalize separators
+            // E.g., "0.5" "0,5" "0 5" all become "05" for better matching
+            text = Regex.Replace(text, @"(\d)[\s\.,](\d)", "$1$2");
+
+            // Normalize volume units - standardize to simple form
+            text = Regex.Replace(text, @"(\d+)\s*л\b", "$1l", RegexOptions.IgnoreCase);
+            text = Regex.Replace(text, @"(\d+)\s*мл\b", "$1ml", RegexOptions.IgnoreCase);
+
+            // Normalize packaging terms
+            // "ж/б" (tin can) corresponds to "in can" - both become "can"
+            text = text.Replace("ж/б", "can");
+            text = Regex.Replace(text, @"\bin\s+can\b", "can", RegexOptions.IgnoreCase);
+            
+            // Remove "ст" (glass bottle) and "bottle" as they don't help matching
+            text = Regex.Replace(text, @"\b(ст|bottle)\b", "", RegexOptions.IgnoreCase);
+
+            // Remove extra punctuation for better matching
+            text = text.Replace(",", " ").Replace("/", " ").Replace(".", " ");
+
+            // Remove common filler words
+            text = Regex.Replace(text, @"\b(bier|beer|lager)\b", "", RegexOptions.IgnoreCase);
+
+            // Final cleanup - trim and normalize spaces
+            text = Regex.Replace(text, @"\s+", " ").Trim();
+
+            return text.ToLower();
         }
 
         static void Main(string[] args)
@@ -107,14 +167,20 @@ namespace JsonMatching
                     int bestScore = 0;
                     Product? bestMatch = null;
 
+                    // Normalize the item name once for this iteration
+                    string normalizedItemName = NormalizeForMatching(item.name, isItemsType2: true);
+
                     // Find the best matching product for this item
                     foreach (var product in productsData)
                     {
                         if (string.IsNullOrEmpty(product.Name))
                             continue;
 
-                        // Calculate similarity ratio using FuzzySharp
-                        int similarityScore = Fuzz.Ratio(item.name, product.Name);
+                        // Normalize the product name
+                        string normalizedProductName = NormalizeForMatching(product.Name, isItemsType2: false);
+
+                        // Calculate similarity ratio using FuzzySharp on normalized names
+                        int similarityScore = Fuzz.Ratio(normalizedItemName, normalizedProductName);
 
                         if (similarityScore >= threshold && similarityScore > bestScore)
                         {
@@ -129,7 +195,8 @@ namespace JsonMatching
                         Console.WriteLine($"Совпадение найдено! (схожесть: {bestScore}%)");
                         Console.WriteLine($"  ID: {item.id}");
                         Console.WriteLine($"  ItemsType2: {item.name}");
-                        Console.WriteLine($"  Products: {bestMatch.Name}\n");
+                        Console.WriteLine($"  Products: {bestMatch.Name}");
+                        Console.WriteLine($"  Нормализовано: '{normalizedItemName}' <-> '{NormalizeForMatching(bestMatch.Name ?? "")}'\n");
 
                         results.Add(new ResultItem
                         {
