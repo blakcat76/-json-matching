@@ -27,7 +27,8 @@ namespace JsonMatching
         class ResultItem
         {
             public int Id { get; set; }
-            public string? Name { get; set; }
+            public string? ItemName { get; set; }
+            public string? ProductName { get; set; }
         }
 
         static void Main(string[] args)
@@ -133,7 +134,8 @@ namespace JsonMatching
                         results.Add(new ResultItem
                         {
                             Id = item.id,
-                            Name = bestMatch.Name
+                            ItemName = item.name,
+                            ProductName = bestMatch.Name
                         });
                     }
                 }
