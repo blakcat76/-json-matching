@@ -1,0 +1,17 @@
+[
+  {
+    "Id": 2001,
+    "ItemName": "Пиво разливное Budweiser (0.5л) США",
+    "ProductName": "Guinness Draught, 0.44 л"
+  },
+  {
+    "Id": 2002,
+    "ItemName": "Пиво Stella Artois ст (0.33л) Бельгия",
+    "ProductName": "Stella Artois Premium Lager, 0.5 л"
+  },
+  {
+    "Id": 3001,
+    "ItemName": "Пиво Hoegaarden White Beer (0.33л)",
+    "ProductName": "Hoegaarden White, 0.33 л"
+  }
+]

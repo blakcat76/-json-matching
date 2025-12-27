@@ -1,0 +1,17 @@
+[
+  {
+    "Id": 1001,
+    "ItemName": "Пиво разливное имп. Paulaner Oktoberfest ж/б (0.5л ПЭТ) Германия",
+    "ProductName": "Paulaner, Oktoberfest Bier, in can, 0.5 л"
+  },
+  {
+    "Id": 1002,
+    "ItemName": "Пиво бутылочное имп. Corona\tExtra\n(355\tмл) Мексика",
+    "ProductName": "Corona Extra, 355 мл"
+  },
+  {
+    "Id": 1003,
+    "ItemName": "Пиво разливное Heineken ст (0,5 л) Нидерланды",
+    "ProductName": "Heineken Lager, 0.5 л"
+  }
+]
