@@ -166,6 +166,7 @@ namespace JsonMatching
 
                     int bestScore = 0;
                     Product? bestMatch = null;
+                    string? bestMatchNormalized = null;
 
                     // Normalize the item name once for this iteration
                     string normalizedItemName = NormalizeForMatching(item.name, isItemsType2: true);
@@ -186,6 +187,7 @@ namespace JsonMatching
                         {
                             bestScore = similarityScore;
                             bestMatch = product;
+                            bestMatchNormalized = normalizedProductName;
                         }
                     }
 
@@ -196,7 +198,7 @@ namespace JsonMatching
                         Console.WriteLine($"  ID: {item.id}");
                         Console.WriteLine($"  ItemsType2: {item.name}");
                         Console.WriteLine($"  Products: {bestMatch.Name}");
-                        Console.WriteLine($"  Нормализовано: '{normalizedItemName}' <-> '{NormalizeForMatching(bestMatch.Name ?? "")}'\n");
+                        Console.WriteLine($"  Нормализовано: '{normalizedItemName}' <-> '{bestMatchNormalized}'\n");
 
                         results.Add(new ResultItem
                         {
